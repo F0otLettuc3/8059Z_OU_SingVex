@@ -21,7 +21,7 @@ void redBottom(){
 }
 
 void redTop(){
-
+  
 }
 
 void blueBottom(){

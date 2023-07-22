@@ -1,13 +1,14 @@
 #include "main.h"
 #include "baseControl.hpp"
 
-#define defaultMoveKP 0
-#define defaultMoveKD 0
-#define defaultTurnKP 0
-#define defaultTurnKD 0
-#define distanceLeeway 0
-#define bearingLeeway 0
-#define rampPower 0
+#define defaultMoveKP 15 //12 at 20 inches
+#define defaultMoveKD 2
+#define defaultTurnKP 2 //2.25 for 45, 2 for 60, 1.3 for 90
+#define defaultTurnKD 0.1
+#define distanceLeeway 0.5
+#define bearingLeeway 0.5
+#define velocityLeeway 2
+#define rampPower 3 //5
 #define defaultMaxPower 110
 
 double abscap(double x, double abscap){return x>abscap? abscap:x<-abscap? -abscap:x;}
@@ -24,10 +25,16 @@ bool auton = true;
 bool poweredBase = false;
 
 void waitBase(double cutoff){
+	Motor frontLeft(frontLeftPort);
+	Motor midLeft(midLeftPort);
+	Motor backLeft(backLeftPort);
+	Motor frontRight(frontRightPort);
+	Motor midRight(midRightPort);
+	Motor backRight(backRightPort);
 	double start = millis();
 	delay(20);
   if(turnMode) {while(fabs(errorBearing) > bearingLeeway && (millis()-start) < cutoff) delay(20);}
-  else{while((fabs(errorL) > distanceLeeway || fabs(errorR) > distanceLeeway) && (millis()-start) < cutoff)delay(20);}
+  else{while((fabs(errorL) > distanceLeeway || fabs(errorR) > distanceLeeway||fabs(frontLeft.get_actual_velocity())>velocityLeeway||fabs(frontRight.get_actual_velocity())>velocityLeeway||fabs(backLeft.get_actual_velocity())>velocityLeeway||fabs(backRight.get_actual_velocity())>velocityLeeway||fabs(midLeft.get_actual_velocity())>velocityLeeway||fabs(midRight.get_actual_velocity())>velocityLeeway) && (millis()-start) < cutoff)delay(20);}
 	double end = millis();
 	printf("end: errorL %.2f, errorR %.2f, time %.2f\n",errorL,errorR,end-start);
   targL = posL;
@@ -109,10 +116,12 @@ void baseControl(void * ignore){
 	      powerL = abscap(powerL, maxPower);
 	      powerR = abscap(powerR, maxPower);
 
-				//printf("targL %.2f, targR %.2f\n",targL,targR);
-				//printf("prevErrorL %.2f prevErrorR %.2f\n",prevErrorL,prevErrorR);
-				//printf("posL %.2f, posR %.2f\n",posL,posR);
-				//printf("powerL %.2f, powerR %.2f\n",powerL,powerR);
+				printf("time: %.d\t",millis());
+				printf("targL %.2f, targR %.2f\n",targL,targR);
+				printf("errorL %.2f ErrorR %.2f\t",errorL,errorR);
+				printf("prevErrorL %.2f prevErrorR %.2f\t",prevErrorL,prevErrorR);
+				printf("posL %.2f, posR %.2f\td",posL,posR);
+				printf("powerL %.2f, powerR %.2f\n",powerL,powerR);
 
 				//printf("targBearing %.2f, errorBearing %.2f, prevErrorBearing %.2f, bearing %.2f, targPowerL %.2f, powerL %.2f\n",targBearing,errorBearing,prevErrorBearing,bearing,targPowerL,powerL);
     	}

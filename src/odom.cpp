@@ -17,7 +17,7 @@ void resetCoords(double x, double y){
   Motor backRight (backRightPort);
   Imu imu(imuPort);
 
-  frontLeft.tare_position();
+frontLeft.tare_position();
   midLeft.tare_position();
   backLeft.tare_position();
   frontRight.tare_position();
@@ -42,6 +42,7 @@ void odometry(void * ignore){
   Imu imu (imuPort);
   Motor frontLeft(frontLeftPort);
   Motor frontRight(frontRightPort);
+  Controller master (E_CONTROLLER_MASTER);
   posL = 0, posR = 0, bearing = 0;
   while(true){
     if(imu.is_calibrating()){
@@ -62,6 +63,8 @@ void odometry(void * ignore){
       prevL = posL;
       prevR = posR;
     }
+    printf("%.2f, %.2f, %.2f\n", X, Y, bearing);
+    master.print(0,0,"%.2f, %.2f, %.2f", X, Y, bearing);
     delay(5);
   }
 }

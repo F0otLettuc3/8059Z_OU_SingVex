@@ -30,7 +30,17 @@ void initialize() {
 	Motor midRight(midRightPort,E_MOTOR_GEARSET_06,true,E_MOTOR_ENCODER_DEGREES);
 	Motor backRight(backRightPort,E_MOTOR_GEARSET_06,false,E_MOTOR_ENCODER_DEGREES);
 
-	Motor catapult(catapultPort,E_MOTOR_GEARSET_36,false,E_MOTOR_ENCODER_DEGREES);
+	frontLeft.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	frontRight.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	midLeft.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	midRight.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	backLeft.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	backRight.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	Motor catapultLeft(catapultLeftPort,E_MOTOR_GEARSET_18,true,E_MOTOR_ENCODER_DEGREES);
+	Motor catapultRight(catapultRightPort,E_MOTOR_GEARSET_18,false,E_MOTOR_ENCODER_DEGREES);
+	catapultLeft.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	catapultRight.set_brake_mode(MOTOR_BRAKE_BRAKE);
+
 	Rotation catapultSensor(catapultSensorPort);
 	Imu imu(imuPort);
 
@@ -70,6 +80,12 @@ void competition_initialize() {}
 void autonomous() {
 	auton = true;
 	Task baseControlTask(baseControl,(void*)"PROS",TASK_PRIORITY_DEFAULT,TASK_STACK_DEPTH_DEFAULT);
+	baseMove(10,2000);
+	delay(50);
+	baseMove(20,2000);
+	delay(50);
+	baseMove(5,200);
+	delay(5000);
 	baseControlTask.remove();
 
 }
@@ -95,7 +111,8 @@ void opcontrol() {
 	Motor frontRight(frontRightPort);
 	Motor midRight(midRightPort);
 	Motor backRight(backRightPort);
-	Motor catapult(catapultPort);
+	Motor catapultLeft(catapultLeftPort);
+	Motor catapultRight(catapultRightPort);
 
 	Rotation catapultSensor(catapultSensorPort);
 
@@ -115,7 +132,6 @@ void opcontrol() {
 		midRight.move(right);
 		backRight.move(right);
 		//Testing for Straight Movement
-		/*
 		double centre = master.get_analog(ANALOG_LEFT_Y);
 		frontLeft.move(centre);
 		midLeft.move(centre);
@@ -123,7 +139,7 @@ void opcontrol() {
 		frontRight.move(centre);
 		midRight.move(centre);
 		backRight.move(centre);
-		*/
+
 
 		//Catapult Control
 		if(master.get_digital_new_press(DIGITAL_R1)){
@@ -136,7 +152,8 @@ void opcontrol() {
 		}
 		if(master.get_digital(DIGITAL_B)){
 			catapultManual = true;
-			catapult.move(127);
+			catapultLeft.move(127);
+			catapultRight.move(127);
 		}
 		else{catapultManual = false;}
 		double pos = catapultSensor.get_angle();
