@@ -29,6 +29,7 @@ void initialize() {
 	Motor frontRight(frontRightPort,E_MOTOR_GEARSET_06,false,E_MOTOR_ENCODER_DEGREES);
 	Motor midRight(midRightPort,E_MOTOR_GEARSET_06,true,E_MOTOR_ENCODER_DEGREES);
 	Motor backRight(backRightPort,E_MOTOR_GEARSET_06,false,E_MOTOR_ENCODER_DEGREES);
+	ADIDigitalOut intakeLift(intakeLiftPort);
 
 	frontLeft.set_brake_mode(MOTOR_BRAKE_BRAKE);
 	frontRight.set_brake_mode(MOTOR_BRAKE_BRAKE);
@@ -80,12 +81,31 @@ void competition_initialize() {}
 void autonomous() {
 	auton = true;
 	Task baseControlTask(baseControl,(void*)"PROS",TASK_PRIORITY_DEFAULT,TASK_STACK_DEPTH_DEFAULT);
+	ADIDigitalOut intakeLift(intakeLiftPort);
+
+	intakeLift.set_value(true);
+	baseMove(45,2500);
+	delay(15);
+	baseTurn(90,1000);
+	delay(15);
+	intakeLift.set_value(false);
+	delay(500);
+	baseMove(25,2000);
+	delay(15);
+	baseMove(-20,3000);
+	/*
+	baseTurn(0,2000);
 	baseMove(10,2000);
-	delay(50);
-	baseMove(20,2000);
-	delay(50);
-	baseMove(5,200);
-	delay(5000);
+	intakeLift.set_value(false);
+	baseTurn(90,1300);
+	baseMove(35,3000);
+	*/
+
+
+
+	
+
+
 	baseControlTask.remove();
 
 }
@@ -113,32 +133,34 @@ void opcontrol() {
 	Motor backRight(backRightPort);
 	Motor catapultLeft(catapultLeftPort);
 	Motor catapultRight(catapultRightPort);
+	ADIDigitalOut intakeLift(intakeLiftPort);
 
 	Rotation catapultSensor(catapultSensorPort);
 
 	double setTime = millis();
 	auton = false;
 	catapultManual = true;
+	bool intakeState = false;
 
 	while (true) {
 		//Drive Control
 		double left = master.get_analog(ANALOG_LEFT_Y);
 		double right = master.get_analog(ANALOG_RIGHT_Y);
 
-		frontLeft.move(left);
-		midLeft.move(left);
-		backLeft.move(left);
-		frontRight.move(right);
-		midRight.move(right);
-		backRight.move(right);
-		//Testing for Straight Movement
-		double centre = master.get_analog(ANALOG_LEFT_Y);
-		frontLeft.move(centre);
-		midLeft.move(centre);
-		backLeft.move(centre);
-		frontRight.move(centre);
-		midRight.move(centre);
-		backRight.move(centre);
+		frontLeft.move(-right);
+		midLeft.move(-right);
+		backLeft.move(-right);
+		frontRight.move(-left);
+		midRight.move(-left);
+		backRight.move(-left);
+		// //Testing for Straight Movement
+		// double centre = master.get_analog(ANALOG_LEFT_Y);
+		// frontLeft.move(centre);
+		// midLeft.move(centre);
+		// backLeft.move(centre);
+		// frontRight.move(centre);
+		// midRight.move(centre);
+		// backRight.move(centre);
 
 
 		//Catapult Control
@@ -155,9 +177,17 @@ void opcontrol() {
 			catapultLeft.move(127);
 			catapultRight.move(127);
 		}
+		if(master.get_digital(DIGITAL_L1)){
+			catapultManual = true;
+			catapultLeft.move(-127);
+			catapultRight.move(-127);
+		}
 		else{catapultManual = false;}
 		double pos = catapultSensor.get_angle();
 		//printf("catapult pos%.2f\n",pos);
+
+		if(master.get_digital_new_press(DIGITAL_L2)){intakeState = !intakeState;}
+		intakeLift.set_value(intakeState);
 
 		delay(20);
 	}
